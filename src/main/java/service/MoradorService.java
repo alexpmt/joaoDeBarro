@@ -39,6 +39,21 @@ public class MoradorService {
         moradorRepository.salvar(morador);
     }
 
+    public void editarMorador(String nome, String cpf, Long idApartamento, int qtdPets, int vagasGaragem) {
+        Morador morador = moradorRepository.buscarCpf(cpf);
+        if (morador == null) {
+            throw new IllegalArgumentException("Morador não encontrado.");
+        }
+
+        if (apartamentoRepository.buscarPorId(idApartamento) == null) {
+            throw new IllegalArgumentException("Não foi encontrado um apartamento com o ID fornecido.");
+        }
+
+        Morador moradorEditado = new Morador(nome,  cpf, idApartamento, qtdPets, vagasGaragem);
+        moradorEditado.setId(morador.getId());
+        moradorRepository.atualizar(moradorEditado);
+    }
+
     public void removerMorador(String cpf) {
         Morador morador = moradorRepository.buscarCpf(cpf);
         if (morador == null) {
