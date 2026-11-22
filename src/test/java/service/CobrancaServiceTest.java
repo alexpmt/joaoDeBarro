@@ -192,4 +192,50 @@ class CobrancaServiceTest {
 
         assertEquals(new BigDecimal("800.00"), despesas);
     }
+
+    @Test
+    void deveRegistrarPagamentoComEncargos() {
+
+        Cobranca cobranca = new Cobranca(
+                null,
+                TipoCobranca.TAXA_CONDOMINIAL,
+                1L,
+                LocalDate.now().minusDays(10),
+                new BigDecimal("100.00"),
+                10L
+        );
+        cobrancaRepository.salvar(cobranca);
+        service.registrarPagamento(cobranca);
+
+        assertEquals(
+                StatusCobranca.PAGO,
+                cobranca.getStatus()
+        );
+        assertEquals(
+                new BigDecimal("102.33"),
+                cobranca.getValorPago()
+        );
+    }
+
+    @Test
+    void deveCalcularReceitaConsiderandoEncargosPagos() {
+
+        Cobranca cobranca = new Cobranca(
+                null,
+                TipoCobranca.TAXA_CONDOMINIAL,
+                1L,
+                LocalDate.now().minusDays(10),
+                new BigDecimal("100.00"),
+                10L
+        );
+
+        cobrancaRepository.salvar(cobranca);
+
+        service.registrarPagamento(cobranca);
+
+        assertEquals(
+                new BigDecimal("102.33"),
+                service.calcularReceita()
+        );
+    }
 }
