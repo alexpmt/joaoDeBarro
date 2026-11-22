@@ -13,36 +13,30 @@ public class VisitanteService {
     }
 
     public List<Visitante> listarTodos() {
-        List<Visitante> lista = visitanteRepository.listarTudo();
-        if (lista.isEmpty()) System.out.println("Não há visitantes cadastrados.");
-        return lista;
+        return visitanteRepository.listarTudo();
     }
 
     public Visitante buscarPorCpf(String cpf) {
         Visitante visitante = visitanteRepository.buscarCpf(cpf);
-        if (visitante == null) System.out.println("Visitante não encontrado.");
+        if (visitante == null) throw new IllegalArgumentException("Visitante não encontrado.");
         return visitante;
     }
 
     public void cadastrarVisitante(String nome, String cpf) {
         if (visitanteRepository.buscarCpf(cpf) != null) {
-            System.out.println("Já existe uma visitante com esse CPF.");
-            return;
+            throw new IllegalArgumentException("Já existe um visitante com esse CPF.");
         }
 
         Visitante visitante = new Visitante(nome,  cpf);
         visitanteRepository.salvar(visitante);
-        System.out.println("Visitante cadastrado com sucesso.");
     }
 
     public void removerVisitante(String cpf) {
         Visitante visitante = visitanteRepository.buscarCpf(cpf);
         if (visitante == null) {
-            System.out.println("Visitante não encontrado.");
-            return;
+            throw new IllegalArgumentException("Visitante não encontrado.");
         }
 
         visitanteRepository.remover(visitante.getId());
-        System.out.println("Visitante removido com sucesso.");
     }
 }
