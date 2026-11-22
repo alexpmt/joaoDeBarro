@@ -24,40 +24,32 @@ public class AutorizacaoService {
     }
 
     public List<Autorizacao> listarTodos() {
-        List<Autorizacao> lista = autorizacaoRepository.listarTudo();
-        if (lista.isEmpty()) System.out.println("Não há autorizações cadastradas.");
-        return lista;
+        return autorizacaoRepository.listarTudo();
     }
 
     public List<Autorizacao> buscarPorVisitanteDia(String cpfVisitante, LocalDate dia) {
         Visitante visitante = visitanteRepository.buscarCpf(cpfVisitante);
         if (visitante == null) {
-            System.out.println("Visitante não encontrado.");
-            return List.of();
+            throw new IllegalArgumentException("Visitante não encontrado.");
         }
 
-        List<Autorizacao> lista = autorizacaoRepository.buscarVisitanteData(visitante.getId(), dia);
-        if (lista.isEmpty()) System.out.println("Não há autorização para o visitante no dia fornecido.");
-        return lista;
+        return autorizacaoRepository.buscarVisitanteData(visitante.getId(), dia);
     }
 
     public Autorizacao buscarPorMoradorVisitanteDia(String cpfMorador, String cpfVisitante, LocalDate dia) {
         Morador morador = moradorRepository.buscarCpf(cpfMorador);
         if (morador == null) {
-            System.out.println("Morador não encontrado.");
-            return new Autorizacao();
+            throw new IllegalArgumentException("Morador não encontrado.");
         }
 
         Visitante visitante = visitanteRepository.buscarCpf(cpfVisitante);
         if (visitante == null) {
-            System.out.println("Visitante não encontrado.");
-            return new Autorizacao();
+            throw new IllegalArgumentException("Visitante não encontrado.");
         }
 
         Autorizacao autorizacao = autorizacaoRepository.buscarMoradorVisitanteData(morador.getId(), visitante.getId(), dia);
         if (autorizacao == null) {
-            System.out.println("Autorização não encontrada.");
-            return new Autorizacao();
+            throw new IllegalArgumentException("Autorização não encontrada.");
         }
         return autorizacao;
     }
@@ -65,30 +57,25 @@ public class AutorizacaoService {
     public void cadastrarAutorizacao(String cpfMorador, LocalDate dia, String cpfVisitante, String nomeVisitante) {
         Morador morador = moradorRepository.buscarCpf(cpfMorador);
         if (morador == null) {
-            System.out.println("Morador não encontrado.");
-            return;
+            throw new IllegalArgumentException("Morador não encontrado.");
         }
 
         Visitante visitante = visitanteRepository.buscarCpf(cpfVisitante);
         if (visitante == null) {
-            System.out.println("Cadastrar novo visitante.");
             visitante =  new Visitante(nomeVisitante, cpfVisitante);
             visitanteRepository.salvar(visitante);
         }
 
         Autorizacao autorizacao = autorizacaoRepository.buscarMoradorVisitanteData(morador.getId(), visitante.getId(), dia);
         if (autorizacao != null) {
-            System.out.println("O visitante já está autorizado no dia fornecido.");
-            return;
+            throw new IllegalStateException("O visitante já está autorizado no dia fornecido.");
         }
         autorizacao = new Autorizacao(morador.getId(), visitante.getId(), dia);
         autorizacaoRepository.salvar(autorizacao);
-        System.out.println("Autorização cadastrada com sucesso.");
     }
 
     public void removerAutorizacao(String cpfMorador, LocalDate dia, String cpfVisitante) {
         Autorizacao autorizacao = buscarPorMoradorVisitanteDia(cpfMorador, cpfVisitante, dia);
         autorizacaoRepository.remover(autorizacao.getId());
-        System.out.println("Autorização removida com sucesso.");
     }
 }
