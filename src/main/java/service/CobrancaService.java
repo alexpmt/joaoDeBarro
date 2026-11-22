@@ -55,8 +55,10 @@ public class CobrancaService {
             throw new IllegalArgumentException("Cobrança não está pendente.");
         }
 
+        LocalDate dataPagamento = LocalDate.now();
+        cobranca.setValorPago(cobranca.valorComEncargos(dataPagamento));
         cobranca.setStatus(StatusCobranca.PAGO);
-        cobranca.setDataPagamento(LocalDate.now());
+        cobranca.setDataPagamento(dataPagamento);
 
         cobrancaRepository.atualizar(cobranca);
     }
@@ -65,7 +67,7 @@ public class CobrancaService {
 
         return cobrancaRepository.listarTudo().stream()
                 .filter(c -> c.getStatus() == StatusCobranca.PAGO)
-                .map(Cobranca::getValor)
+                .map(Cobranca::getValorPago)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 

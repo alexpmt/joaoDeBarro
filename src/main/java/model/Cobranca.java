@@ -21,6 +21,7 @@ public class Cobranca implements Identificavel{
     @CsvBindByName private TipoCobranca tipo;
     @CsvBindByName private StatusCobranca status;
     @CsvBindByName private Long reservaId;
+    @CsvBindByName private BigDecimal valorPago;
 
     public Cobranca() {}
 
@@ -123,5 +124,13 @@ public class Cobranca implements Identificavel{
 
     public void setStatus(StatusCobranca status) {
         this.status = status;
+    }
+
+    public BigDecimal getValorPago() {
+        return valorPago;
+    }
+
+    public void setValorPago(BigDecimal valorPago) {
+        this.valorPago = valorPago;
     }
 }
