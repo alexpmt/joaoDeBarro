@@ -25,13 +25,21 @@ public class AutorizacaoServiceTest extends ServiceTestSupport {
     public void naoDuplicaAutorizacaoNoMesmoDiaEPermiteOutroDia() {
         new ApartamentoService(apartamentos).cadastrarApartamento("12", "C");
         Long apId = apartamentos.buscarPorTorreNumero("12", "C").getId();
-        new MoradorService(apartamentos, moradores).cadastrarMorador("Ana", "111", apId, 0, 1);
+        new MoradorService(apartamentos, moradores)
+                .cadastrarMorador("Ana", "111", apId, 0, 1);
         new VisitanteService(visitantes).cadastrarVisitante("Carlos", "333");
-        AutorizacaoService service = new AutorizacaoService(moradores, visitantes, autorizacoes);
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
         LocalDate dia = LocalDate.of(2026, 11, 1);
         service.cadastrarAutorizacao("111", dia, "333", "Carlos");
-        service.cadastrarAutorizacao("111", dia, "333", "Carlos");
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.cadastrarAutorizacao("111", dia, "333", "Carlos")
+        );
+
         service.cadastrarAutorizacao("111", dia.plusDays(1), "333", "Carlos");
+
         assertEquals(2, service.listarTodos().size());
     }
 
@@ -60,5 +68,115 @@ public class AutorizacaoServiceTest extends ServiceTestSupport {
         LocalDate dia = LocalDate.of(2026, 11, 1);
         service.cadastrarAutorizacao("111", dia, "333", "Carlos");
         assertTrue(service.buscarPorVisitanteDia("333", dia.plusDays(1)).isEmpty());
+    }
+
+    @Test
+    public void naoCadastraAutorizacaoParaMoradorInexistente() {
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.cadastrarAutorizacao(
+                        "999", LocalDate.now(), "333", "Carlos"
+                )
+        );
+        assertTrue(autorizacoes.listarTudo().isEmpty());
+        assertTrue(visitantes.listarTudo().isEmpty());
+    }
+
+    @Test
+    public void rejeitaBuscaPorVisitanteInexistente() {
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.buscarPorVisitanteDia(
+                        "999", LocalDate.now()
+                )
+        );
+    }
+
+    @Test
+    public void rejeitaBuscaPorMoradorInexistente() {
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.buscarPorMoradorVisitanteDia(
+                        "999", "333", LocalDate.now()
+                )
+        );
+    }
+
+    @Test
+    public void rejeitaBuscaPorVisitanteInexistenteNaConsultaPorMorador() {
+        new ApartamentoService(apartamentos).cadastrarApartamento("12", "C");
+        Long apId = apartamentos.buscarPorTorreNumero("12", "C").getId();
+
+        new MoradorService(apartamentos, moradores)
+                .cadastrarMorador("Ana", "111", apId, 0, 1);
+
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.buscarPorMoradorVisitanteDia(
+                        "111", "999", LocalDate.now()
+                )
+        );
+    }
+
+    @Test
+    public void rejeitaBuscaPorAutorizacaoInexistente() {
+        new ApartamentoService(apartamentos).cadastrarApartamento("12", "C");
+        Long apId = apartamentos.buscarPorTorreNumero("12", "C").getId();
+
+        new MoradorService(apartamentos, moradores)
+                .cadastrarMorador("Ana", "111", apId, 0, 1);
+
+        new VisitanteService(visitantes).cadastrarVisitante("Carlos", "333");
+
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.buscarPorMoradorVisitanteDia(
+                        "111", "333", LocalDate.now()
+                )
+        );
+    }
+
+    @Test
+    public void rejeitaRemocaoDeAutorizacaoInexistente() {
+        new ApartamentoService(apartamentos).cadastrarApartamento("12", "C");
+        Long apId = apartamentos.buscarPorTorreNumero("12", "C").getId();
+
+        new MoradorService(apartamentos, moradores)
+                .cadastrarMorador("Ana", "111", apId, 0, 1);
+
+        new VisitanteService(visitantes).cadastrarVisitante("Carlos", "333");
+
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.removerAutorizacao(
+                        "111", LocalDate.now(), "333"
+                )
+        );
+    }
+
+    @Test
+    public void listaAutorizacoesSemRegistros() {
+        AutorizacaoService service =
+                new AutorizacaoService(moradores, visitantes, autorizacoes);
+
+        assertTrue(service.listarTodos().isEmpty());
     }
 }
