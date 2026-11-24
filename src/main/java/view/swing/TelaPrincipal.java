@@ -62,6 +62,11 @@ public class TelaPrincipal extends JFrame {
                                 new PainelVisitantes(), modulo
                         );
 
+                case "Autorizações" ->
+                        painelConteudo.add(
+                                new PainelAutorizacoes(), modulo
+                        );
+
                 default ->
                         painelConteudo.add(
                                 criarPainelModulo(modulo), modulo
